@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>برنامج الأذكار والقرآن والسنن والأحاديث والأدعية</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bg: '#f9fafb',
+            surface: '#ffffff',
+            border: '#e5e7eb',
+            muted: '#6b7280',
+            primary: {
+              DEFAULT: '#0ea5e9',
+              soft: '#e0f2fe',
+              hover: '#0284c7'
+            },
+            success: '#16a34a',
+            danger: '#dc2626'
+          },
+          fontFamily: {
+            heading: ['system-ui', 'sans-serif'],
+            body: ['system-ui', 'sans-serif']
+          },
+          boxShadow: {
+            soft: '0 10px 15px -3px rgba(15,23,42,0.08), 0 4px 6px -4px rgba(15,23,42,0.06)'
+          },
+          borderRadius: {
+            xl: '1rem'
+          }
+        }
+      }
+    };
+  </script>
+  <link href="https://cdn.jsdelivr.net/npm/flowbite@4.0.0/dist/flowbite.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --focus-ring-color: #0ea5e9;
+    }
+    .focus-visible-outline:focus-visible {
+      outline: 2px solid var(--focus-ring-color);
+      outline-offset: 2px;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-bg font-body text-slate-900">
+  <header class="bg-white border-b border-border sticky top-0 z-20">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+      <div>
+        <h1 class="text-xl font-semibold font-heading text-slate-900">برنامج الأذكار والقرآن والسنن</h1>
+        <p class="text-sm text-muted">واجهة خفيفة تجمع الأذكار والقرآن والسنن والأحاديث والأدعية.</p>
+      </div>
+      <button id="btnTodayReset" class="hidden md:inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-primary-soft text-primary text-sm focus-visible-outline">
+        تصفير إنجازات اليوم
+      </button>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 py-6 space-y-6">
+    <!-- بطاقات الأقسام الرئيسية -->
+    <section aria-label="الأقسام الرئيسية" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <button data-section="azkar" class="section-tab focus-visible-outline text-right bg-surface border border-border rounded-xl shadow-soft px-4 py-4 flex flex-col gap-1 hover:border-primary-hover hover:shadow-md transition">
+        <span class="text-sm font-medium text-primary">الأذكار</span>
+        <span class="text-xs text-muted">أذكار متنوعة (صباح، مساء، نوم، استيقاظ، وضوء، مسجد، سفر، وبعد الصلاة) مع عدّاد.</span>
+      </button>
+      <button data-section="quran" class="section-tab focus-visible-outline text-right bg-surface border border-border rounded-xl shadow-soft px-4 py-4 flex flex-col gap-1 hover:border-primary-hover hover:shadow-md transition">
+        <span class="text-sm font-medium text-primary">القرآن</span>
+        <span class="text-xs text-muted">ورد القرآن + مصحف كامل (من ملف quran.json الذي ترفعه أنت).</span>
+      </button>
+      <button data-section="sunan" class="section-tab focus-visible-outline text-right bg-surface border border-border rounded-xl shadow-soft px-4 py-4 flex flex-col gap-1 hover:border-primary-hover hover:shadow-md transition">
+        <span class="text-sm font-medium text-primary">السنن</span>
+        <span class="text-xs text-muted">قراءة مختصرة عن السنن المؤكّدة.</span>
+      </button>
+      <button data-section="hadith" class="section-tab focus-visible-outline text-right bg-surface border border-border rounded-xl shadow-soft px-4 py-4 flex flex-col gap-1 hover:border-primary-hover hover:shadow-md transition">
+        <span class="text-sm font-medium text-primary">الأحاديث</span>
+        <span class="text-xs text-muted">مجموعة مختارة من الأحاديث الصحيحة مع المصدر.</span>
+      </button>
+      <button data-section="duas" class="section-tab focus-visible-outline text-right bg-surface border border-border rounded-xl shadow-soft px-4 py-4 flex flex-col gap-1 hover:border-primary-hover hover:shadow-md transition">
+        <span class="text-sm font-medium text-primary">الأدعية</span>
+        <span class="text-xs text-muted">أدعية من السنّة في الهمّ والكرب والرزق والحفظ والسفر والاستخارة.</span>
+      </button>
+      <button data-section="reminders" class="section-tab focus-visible-outline text-right bg-surface border border-border rounded-xl shadow-soft px-4 py-4 flex flex-col gap-1 hover:border-primary-hover hover:shadow-md transition">
+        <span class="text-sm font-medium text-primary">المنبّه</span>
+        <span class="text-xs text-muted">تنبيه بسيط داخل المتصفح لأوقات الأذكار والسنن.</span>
+      </button>
+    </section>
+
+    <!-- قسم الأذكار -->
+    <section id="section-azkar" class="section-panel bg-surface border border-border rounded-xl shadow-soft p-4 space-y-4" aria-label="قسم الأذكار">
+      <div class="flex items-center justify-between gap-3">
+        <h2 class="text-lg font-semibold font-heading">الأذكار اليومية</h2>
+        <div class="inline-flex flex-wrap gap-1 rounded-lg border border-border bg-bg p-1 text-xs" role="tablist" aria-label="أنواع الأذكار">
+          <button class="azkar-tab px-3 py-1 rounded-md focus-visible-outline bg-white text-primary text-[13px]" data-type="morning" role="tab">الصباح</button>
+          <button class="azkar-tab px-3 py-1 rounded-md focus-visible-outline text-muted text-[13px]" data-type="evening" role="tab">المساء</button>
+          <button class="azkar-tab px-3 py-1 rounded-md focus-visible-outline text-muted text-[13px]" data-type="afterPrayer" role="tab">بعد الصلاة</button>
+          <button class="azkar-tab px-3 py-1 rounded-md focus-visible-outline text-muted text-[13px]" data-type="sleep" role="tab">النوم</button>
+          <button class="azkar-tab px-3 py-1 rounded-md focus-visible-outline text-muted text-[13px]" data-type="wake" role="tab">الاستيقاظ</button>
+          <button class="azkar-tab px-3 py-1 rounded-md focus-visible-outline text-muted text-[13px]" data-type="wudu" role="tab">الوضوء</button>
+          <button class="azkar-tab px-3 py-1 rounded-md focus-visible-outline text-muted text-[13px]" data-type="enterMasjid" role="tab">دخول المسجد</button>
+          <button class="azkar-tab px-3 py-1 rounded-md focus-visible-outline text-muted text-[13px]" data-type="leaveMasjid" role="tab">الخروج من المسجد</button>
+          <button class="azkar-tab px-3 py-1 rounded-md focus-visible-outline text-muted text-[13px]" data-type="enterHome" role="tab">دخول البيت</button>
+          <button class="azkar-tab px-3 py-1 rounded-md focus-visible-outline text-muted text-[13px]" data-type="leaveHome" role="tab">الخروج من البيت</button>
+          <button class="azkar-tab px-3 py-1 rounded-md focus-visible-outline text-muted text-[13px]" data-type="travel" role="tab">السفر</button>
+        </div>
+      </div>
+      <p class="text-xs text-muted">اضغط على زر "تكرار" حتى يصل العدّاد إلى صفر لإتمام الذكر (إن كان له عدد معيّن).</p>
+      <div id="azkar-list" class="space-y-3" aria-live="polite"></div>
+    </section>
+
+    <!-- قسم القرآن -->
+    <section id="section-quran" class="section-panel hidden bg-surface border border-border rounded-xl shadow-soft p-4 space-y-4" aria-label="قسم القرآن">
+      <div class="flex flex-col gap-3">
+        <div class="flex items-center justify-between gap-3">
+          <h2 class="text-lg font-semibold font-heading">القرآن الكريم</h2>
+        </div>
+        <div class="inline-flex rounded-lg border border-border bg-bg p-1 text-xs max-w-xs" role="tablist" aria-label="أقسام القرآن">
+          <button id="btn-quran-ward" class="quran-tab px-3 py-1 rounded-md focus-visible-outline bg-white text-primary text-[13px]" data-view="ward">ورد القرآن</button>
+          <button id="btn-quran-mushaf" class="quran-tab px-3 py-1 rounded-md focus-visible-outline text-muted text-[13px]" data-view="mushaf">المصحف الكامل</button>
+        </div>
+
+        <!-- ورد القرآن -->
+        <div id="quran-ward-view" class="space-y-3">
+          <p class="text-xs text-muted">ضع لنفسك وردًا ثابتًا، وعلّم ما قرأته اليوم.</p>
+          <div id="quran-list" class="space-y-3"></div>
+        </div>
+
+        <!-- المصحف الكامل -->
+        <div id="quran-mushaf-view" class="hidden space-y-4">
+          <p class="text-xs text-muted">اختر سورة لعرض نصها كاملًا داخل البرنامج (من ملف quran.json الذي ترفعه أنت).</p>
+          <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 max-h-64 overflow-y-auto border border-border rounded-lg p-2 bg-white" id="sura-list" aria-label="قائمة السور"></div>
+          <div id="sura-reader" class="hidden border border-border rounded-xl bg-white p-3 max-h-[420px] overflow-y-auto">
+            <div class="flex items-center justify-between gap-2 mb-2">
+              <h3 id="sura-title" class="text-sm font-semibold text-slate-900"></h3>
+              <div class="flex items-center gap-1 text-xs">
+                <button id="btn-font-sm" class="px-2 py-1 rounded-md border border-border text-[11px] text-slate-700 hover:bg-bg focus-visible-outline">تصغير</button>
+                <button id="btn-font-lg" class="px-2 py-1 rounded-md border border-border text-[11px] text-slate-700 hover:bg-bg focus-visible-outline">تكبير</button>
+              </div>
+            </div>
+            <p id="sura-text" class="text-[14px] leading-loose text-slate-900 whitespace-pre-line"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- قسم السنن -->
+    <section id="section-sunan" class="section-panel hidden bg-surface border border-border rounded-xl shadow-soft p-4 space-y-4" aria-label="قسم السنن">
+      <div class="flex items-center justify-between gap-3">
+        <h2 class="text-lg font-semibold font-heading">السنن</h2>
+      </div>
+      <p class="text-xs text-muted">هذا القسم مخصّص لقراءة نصوص مختصرة عن بعض السنن المؤكّدة، بدون تتبّع إنجاز يومي.</p>
+      <div id="sunan-list" class="space-y-3"></div>
+    </section>
+
+    <!-- قسم الأحاديث -->
+    <section id="section-hadith" class="section-panel hidden bg-surface border border-border rounded-xl shadow-soft p-4 space-y-4" aria-label="قسم الأحاديث">
+      <div class="flex items-center justify-between gap-3">
+        <h2 class="text-lg font-semibold font-heading">أحاديث مختارة</h2>
+      </div>
+      <p class="text-xs text-muted">مجموعة من الأحاديث الصحيحة المختصرة مع ذكر المصدر، للقراءة والتذكّر.</p>
+      <div class="inline-flex rounded-lg border border-border bg-bg p-1 text-xs max-w-full flex-wrap gap-1" role="tablist" aria-label="أقسام الأحاديث">
+        <button class="hadith-tab px-3 py-1 rounded-md focus-visible-outline bg-white text-primary text-[13px]" data-category="iman">الإيمان</button>
+        <button class="hadith-tab px-3 py-1 rounded-md focus-visible-outline text-muted text-[13px]" data-category="akhlaq">الأخلاق</button>
+        <button class="hadith-tab px-3 py-1 rounded-md focus-visible-outline text-muted text-[13px]" data-category="adhkar">الذكر والدعاء</button>
+        <button class="hadith-tab px-3 py-1 rounded-md focus-visible-outline text-muted text-[13px]" data-category="birr">برّ الوالدين</button>
+      </div>
+      <div id="hadith-list" class="space-y-3"></div>
+    </section>
+
+    <!-- قسم الأدعية -->
+    <section id="section-duas" class="section-panel hidden bg-surface border border-border rounded-xl shadow-soft p-4 space-y-4" aria-label="قسم الأدعية">
+      <div class="flex items-center justify-between gap-3">
+        <h2 class="text-lg font-semibold font-heading">أدعية منوّعة</h2>
+      </div>
+      <p class="text-xs text-muted">أدعية مأثورة في الهمّ والكرب والرزق والحفظ والسفر والاستخارة وغيرها، مع الإشارة لمصدرها.</p>
+      <div class="inline-flex rounded-lg border border-border bg-bg p-1 text-xs max-w-full flex-wrap gap-1" role="tablist" aria-label="أقسام الأدعية">
+        <button class="duas-tab px-3 py-1 rounded-md focus-visible-outline bg-white text-primary text-[13px]" data-category="ham">الهمّ والكرب</button>
+        <button class="duas-tab px-3 py-1 rounded-md focus-visible-outline text-muted text-[13px]" data-category="rizq">الرزق</button>
+        <button class="duas-tab px-3 py-1 rounded-md focus-visible-outline text-muted text-[13px]" data-category="hifz">الحفظ والوقاية</button>
+        <button class="duas-tab px-3 py-1 rounded-md focus-visible-outline text-muted text-[13px]" data-category="travelIstikhara">السفر والاستخارة</button>
+      </div>
+      <div id="duas-list" class="space-y-3"></div>
+    </section>
+
+    <!-- قسم المنبّه -->
+    <section id="section-reminders" class="section-panel hidden bg-surface border border-border rounded-xl shadow-soft p-4 space-y-4" aria-label="قسم المنبّه">
+      <div class="flex items-center justify-between gap-3">
+        <h2 class="text-lg font-semibold font-heading">منبّه الأذكار والسنن</h2>
+      </div>
+      <p class="text-xs text-muted">هذا المنبّه يعمل ما دام المتصفّح مفتوحًا. عند حلول الوقت سيظهر تنبيه داخل الصفحة مع صوت خفيف.</p>
+
+      <form id="reminder-form" class="space-y-3">
+        <div class="grid gap-3 sm:grid-cols-2">
+          <div class="space-y-1">
+            <label for="reminder-type" class="text-xs font-medium text-slate-700">نوع التذكير</label>
+            <select id="reminder-type" class="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm focus-visible-outline">
+              <option value="morningAzkar">أذكار الصباح</option>
+              <option value="eveningAzkar">أذكار المساء</option>
+              <option value="quran">ورد القرآن</option>
+              <option value="sunnah">سنة معيّنة</option>
+            </select>
+          </div>
+          <div class="space-y-1">
+            <label for="reminder-time" class="text-xs font-medium text-slate-700">الوقت اليومي</label>
+            <input id="reminder-time" type="time" class="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm focus-visible-outline" required />
+          </div>
+        </div>
+        <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover focus-visible-outline">
+          حفظ المنبّه
+        </button>
+      </form>
+
+      <div class="border-t border-border pt-3 space-y-2">
+        <h3 class="text-sm font-semibold">المنبّهات المفعّلة</h3>
+        <ul id="reminders-list" class="space-y-2 text-sm"></ul>
+      </div>
+    </section>
+  </main>
+
+  <!-- نافذة تنبيه المنبّه -->
+  <div id="reminder-modal" class="hidden fixed inset-0 z-30 flex items-center justify-center bg-black/40">
+    <div class="bg-surface rounded-xl shadow-soft max-w-sm w-full mx-4 p-4 space-y-3" role="alertdialog" aria-modal="true" aria-labelledby="reminder-modal-title">
+      <h2 id="reminder-modal-title" class="text-base font-semibold font-heading text-slate-900">حان وقت التذكير</h2>
+      <p id="reminder-modal-message" class="text-sm text-slate-800"></p>
+      <div class="flex justify-end gap-2 pt-2">
+        <button id="reminder-modal-close" class="px-3 py-1.5 rounded-lg border border-border text-sm text-slate-700 hover:bg-bg focus-visible-outline">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
+  <audio id="reminder-audio">
+    <source src="https://cdn.pixabay.com/audio/2021/08/04/audio_c3ba9e1a60.mp3" type="audio/mpeg" />
+  </audio>
+
+  <script src="https://unpkg.com/parse/dist/parse.min.js"></script>
+  <script>
+    Parse.initialize('t4SMXoxRcHpZx0WtQlpAu8eC65f5NMtJ8n8Htuup', 'd6lkj1S8wEbJaOwSaeNLQIfOhXDgGlMO93UubNSv');
+    Parse.serverURL = 'https://parseapi.back4app.com/';
+  </script>
+
+  <script>
+    // بيانات مبدئية ثابتة للأذكار والسنن والورد
+    const AZKAR_DATA = {
+      morning: [
+        { id: 'm1', text: 'أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ...', repeat: 1, source: 'رواه مسلم' },
+        { id: 'm2', text: 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ', repeat: 100, source: 'رواه مسلم' },
+        { id: 'm3', text: 'اللَّهُمَّ أَنْتَ رَبِّي لا إِلَهَ إِلا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ...', repeat: 1, source: 'سيد الاستغفار' }
+      ],
+      evening: [
+        { id: 'e1', text: 'أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ...', repeat: 1, source: 'رواه مسلم' },
+        { id: 'e2', text: 'حَسْبِيَ اللَّهُ لا إِلَهَ إِلا هُوَ، عَلَيْهِ تَوَكَّلْتُ...', repeat: 7, source: 'رواه أبو داود' }
+      ],
+      afterPrayer: [
+        { id: 'p1', text: 'سُبْحَانَ اللَّهِ', repeat: 33, source: 'بعد الصلاة' },
+        { id: 'p2', text: 'الْحَمْدُ لِلَّهِ', repeat: 33, source: 'بعد الصلاة' },
+        { id: 'p3', text: 'اللَّهُ أَكْبَرُ', repeat: 34, source: 'بعد الصلاة' }
+      ],
+      sleep: [
+        { id: 's1', text: 'بِاسْمِكَ رَبِّي وَضَعْتُ جَنْبِي، وَبِكَ أَرْفَعُهُ، فَإِنْ أَمْسَكْتَ نَفْسِي فَارْحَمْهَا، وَإِنْ أَرْسَلْتَهَا فَاحْفَظْهَا بِمَا تَحْفَظُ بِهِ عِبَادَكَ الصَّالِحِينَ', repeat: 1, source: 'رواه البخاري' },
+        { id: 's2', text: 'اللَّهُمَّ بِاسْمِكَ أَمُوتُ وَأَحْيَا', repeat: 1, source: 'متفق عليه' },
+        { id: 's3', text: 'سُبْحَانَ اللَّهِ (٣٣)، الْحَمْدُ لِلَّهِ (٣٣)، اللَّهُ أَكْبَرُ (٣٤) قبل النوم', repeat: 1, source: 'متفق عليه' }
+      ],
+      wake: [
+        { id: 'w1', text: 'الْحَمْدُ لِلَّهِ الَّذِي أَحْيَانَا بَعْدَ مَا أَمَاتَنَا، وَإِلَيْهِ النُّشُورُ', repeat: 1, source: 'رواه البخاري' },
+        { id: 'w2', text: 'لا إِلَهَ إِلا اللَّهُ وَحْدَهُ لا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ، سُبْحَانَ اللَّهِ، وَالْحَمْدُ لِلَّهِ، وَلَا إِلَهَ إِلَّا اللَّهُ، وَاللَّهُ أَكْبَرُ، وَلَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ', repeat: 1, source: 'رواه البخاري' }
+      ],
+      wudu: [
+        { id: 'wu1', text: '«أَشْهَدُ أَنْ لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، وَأَشْهَدُ أَنَّ مُحَمَّدًا عَبْدُهُ وَرَسُولُهُ، اللَّهُمَّ اجْعَلْنِي مِنَ التَّوَّابِينَ وَاجْعَلْنِي مِنَ الْمُتَطَهِّرِينَ» بعد الوضوء', repeat: 1, source: 'رواه الترمذي' }
+      ],
+      enterMasjid: [
+        { id: 'em1', text: '«بِسْمِ اللَّهِ، وَالصَّلَاةُ وَالسَّلَامُ عَلَى رَسُولِ اللَّهِ، اللَّهُمَّ افْتَحْ لِي أَبْوَابَ رَحْمَتِكَ»', repeat: 1, source: 'رواه مسلم' }
+      ],
+      leaveMasjid: [
+        { id: 'lm1', text: '«بِسْمِ اللَّهِ، وَالصَّلَاةُ وَالسَّلَامُ عَلَى رَسُولِ اللَّهِ، اللَّهُمَّ إِنِّي أَسْأَلُكَ مِنْ فَضْلِكَ»', repeat: 1, source: 'رواه مسلم' }
+      ],
+      enterHome: [
+        { id: 'h1', text: '«بِسْمِ اللَّهِ وَلَجْنَا، وَبِسْمِ اللَّهِ خَرَجْنَا، وَعَلَى رَبِّنَا تَوَكَّلْنَا» ثم يُسَلِّم على أهله', repeat: 1, source: 'رواه أبو داود' }
+      ],
+      leaveHome: [
+        { id: 'o1', text: '«بِسْمِ اللَّهِ، تَوَكَّلْتُ عَلَى اللَّهِ، وَلَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ»', repeat: 1, source: 'رواه الترمذي' }
+      ],
+      travel: [
+        { id: 't1', text: '«اللَّهُمَّ إِنَّا نَسْأَلُكَ فِي سَفَرِنَا هَذَا البِرَّ وَالتَّقْوَى، وَمِنَ العَمَلِ مَا تَرْضَى، اللَّهُمَّ هَوِّنْ عَلَيْنَا سَفَرَنَا هَذَا، وَاطْوِ عَنَّا بُعْدَهُ، اللَّهُمَّ أَنْتَ الصَّاحِبُ فِي السَّفَرِ، وَالخَلِيفَةُ فِي الأَهْلِ»', repeat: 1, source: 'رواه مسلم' },
+        { id: 't2', text: '«سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَذَا، وَمَا كُنَّا لَهُ مُقْرِنِينَ، وَإِنَّا إِلَى رَبِّنَا لَمُنْقَلِبُونَ» عند الركوب', repeat: 1, source: 'رواه الترمذي' }
+      ]
+    };
+
+    const QURAN_DATA = [
+      { id: 'q1', name: 'سورة الكهف', note: 'مستحب قراءتها يوم الجمعة.' },
+      { id: 'q2', name: 'سورة الملك', note: 'تشفع لصاحبها حتى يُغفر له.' },
+      { id: 'q3', name: 'سورة يس', note: 'سورة عظيمة، يُستحب الإكثار من تلاوتها.' }
+    ];
+
+    // نصوص السنن للقراءة فقط
+    const SUNAN_DATA = [
+      {
+        id: 's1',
+        name: 'السنن الرواتب',
+        desc: 'هي الركعات التابعة للفرائض، وعددها اثنتا عشرة ركعة: ركعتان قبل الفجر، وأربع قبل الظهر وركعتان بعده، وركعتان بعد المغرب، وركعتان بعد العشاء.',
+        ref: 'رواه الترمذي عن أم حبيبة رضي الله عنها'
+      },
+      {
+        id: 's2',
+        name: 'قيام الليل',
+        desc: 'صلاة نافلة بعد العشاء إلى الفجر، ولو بركعتين خفيفتين، وكان النبي ﷺ لا يتركها.',
+        ref: 'قال ﷺ: «أفضل الصلاة بعد الفريضة صلاة الليل» رواه مسلم'
+      },
+      {
+        id: 's3',
+        name: 'صيام الإثنين والخميس',
+        desc: 'صيام هذين اليومين من كل أسبوع لما فيهما من رفع الأعمال إلى الله، ولأن النبي ﷺ كان يتحراهما.',
+        ref: 'رواه الترمذي عن أبي هريرة رضي الله عنه'
+      }
+    ];
+
+    // أحاديث مختارة (نموذج؛ راجع صحتها ومصدرها قبل النشر)
+    const HADITH_DATA = {
+      iman: [
+        {
+          id: 'h1',
+          text: '«إنما الأعمال بالنيات، وإنما لكل امرئ ما نوى»',
+          source: 'متفق عليه',
+          note: 'أصل عظيم في اعتبار النية في كل عمل.'
+        },
+        {
+          id: 'h2',
+          text: '«من أحبَّ أن يُزحزح عن النار ويُدخل الجنة فلتأته منيتُه وهو يؤمن بالله واليوم الآخر»',
+          source: 'رواه مسلم',
+          note: 'بيان أهمية الإيمان في النجاة يوم القيامة.'
+        }
+      ],
+      akhlaq: [
+        {
+          id: 'h3',
+          text: '«أكملُ المؤمنين إيمانًا أحسنُهم خُلُقًا»',
+          source: 'رواه الترمذي',
+          note: 'يربط بين كمال الإيمان وحسن الخلق.'
+        },
+        {
+          id: 'h4',
+          text: '«لا يؤمن أحدكم حتى يحبَّ لأخيه ما يحبُّ لنفسه»',
+          source: 'متفق عليه',
+          note: 'يدعو إلى المحبة والإيثار بين المسلمين.'
+        }
+      ],
+      adhkar: [
+        {
+          id: 'h5',
+          text: '«سَبْقَ المُفَرِّدُونَ» قالوا: وما المُفَرِّدُونَ يا رسولَ اللهِ؟ قال: «الذَّاكِرونَ اللهَ كثيرًا والذَّاكِراتُ»',
+          source: 'رواه مسلم',
+          note: 'فضل الإكثار من ذكر الله.'
+        },
+        {
+          id: 'h6',
+          text: '«أقربُ ما يكون العبدُ من ربِّه وهو ساجدٌ، فأكثِروا الدُّعاءَ»',
+          source: 'رواه مسلم',
+          note: 'حثٌّ على الدعاء في السجود.'
+        }
+      ],
+      birr: [
+        {
+          id: 'h7',
+          text: '«رِضَا الرَّبِّ فِي رِضَا الْوَالِدِ، وَسَخَطُ الرَّبِّ فِي سَخَطِ الْوَالِدِ»',
+          source: 'رواه الترمذي',
+          note: 'يبين ارتباط رضى الله برضى الوالدين.'
+        },
+        {
+          id: 'h8',
+          text: 'جاء رجلٌ إلى النبي ﷺ فقال: يا رسولَ الله، مَن أحقُّ الناسِ بحُسنِ صَحابتي؟ قال: «أمُّك»، قال: ثم مَن؟ قال: «أمُّك»، قال: ثم مَن؟ قال: «أمُّك»، قال: ثم مَن؟ قال: «أبوك»',
+          source: 'متفق عليه',
+          note: 'يُظهر عظم حقّ الأم ثم الأب.'
+        }
+      ]
+    };
+
+    // أدعية منوّعة (نموذج؛ راجعها من مصدر موثوق قبل النشر)
+    const DUAS_DATA = {
+      ham: [
+        {
+          id: 'd1',
+          text: '«اللهم إني أعوذ بك من الهمِّ والحزَن، وأعوذ بك من العجز والكسل، وأعوذ بك من الجُبن والبُخل، وأعوذ بك من غلَبة الدَّين وقهر الرجال»',
+          source: 'رواه البخاري',
+          note: 'دعاء عظيم في دفع الهموم والديون.'
+        },
+        {
+          id: 'd2',
+          text: '«لا إله إلا الله العظيم الحليم، لا إله إلا الله ربُّ العرش العظيم، لا إله إلا الله ربُّ السماوات وربُّ الأرض وربُّ العرش الكريم»',
+          source: 'متفق عليه',
+          note: 'يقال عند الكرب والشدة.'
+        }
+      ],
+      rizq: [
+        {
+          id: 'd3',
+          text: '«اللهم اكفِني بحلالِك عن حرامِك، وأغنِني بفضلك عمَّن سواك»',
+          source: 'حديث حسن',
+          note: 'دعاء في طلب الرزق الحلال والكفاية.'
+        },
+        {
+          id: 'd4',
+          text: '«اللهم إني أسألك علمًا نافعًا، ورزقًا طيبًا، وعملًا متقبَّلًا»',
+          source: 'رواه ابن ماجه',
+          note: 'يقال بعد صلاة الفجر.'
+        }
+      ],
+      hifz: [
+        {
+          id: 'd5',
+          text: '«بسمِ اللهِ الذي لا يضرُّ مع اسمِه شيءٌ في الأرضِ ولا في السماءِ وهو السميعُ العليمُ» (ثلاث مرات)',
+          source: 'رواه الترمذي',
+          note: 'ذكر للحفظ من كل سوء بإذن الله.'
+        },
+        {
+          id: 'd6',
+          text: '«أعوذُ بكلماتِ اللهِ التاماتِ من شرِّ ما خلق»',
+          source: 'رواه مسلم',
+          note: 'يقال عند نزول منزل، أو للتحصّن عمومًا.'
+        }
+      ],
+      travelIstikhara: [
+        {
+          id: 'd7',
+          text: '«اللَّهُمَّ إِنَّا نَسْأَلُكَ فِي سَفَرِنَا هَذَا البِرَّ وَالتَّقْوَى، وَمِنَ العَمَلِ مَا تَرْضَى، اللَّهُمَّ هَوِّنْ عَلَيْنَا سَفَرَنَا هَذَا، وَاطْوِ عَنَّا بُعْدَهُ، اللَّهُمَّ أَنْتَ الصَّاحِبُ فِي السَّفَرِ، وَالخَلِيفَةُ فِي الأَهْلِ»',
+          source: 'رواه مسلم',
+          note: 'دعاء السفر عند الخروج.'
+        },
+        {
+          id: 'd8',
+          text: 'دعاء الاستخارة: «اللَّهُمَّ إِنِّي أَسْتَخِيرُكَ بِعِلْمِكَ، وَأَسْتَقْدِرُكَ بِقُدْرَتِكَ، وَأَسْأَلُكَ مِنْ فَضْلِكَ العَظِيمِ، فَإِنَّكَ تَقْدِرُ وَلَا أَقْدِرُ، وَتَعْلَمُ وَلَا أَعْلَمُ، وَأَنْتَ عَلَّامُ الغُيُوبِ...» (إلى آخر الدعاء المعروف)',
+          source: 'رواه البخاري',
+          note: 'يقال بعد ركعتين من غير الفريضة عند الحيرة في الأمر.'
+        }
+      ]
+    };
+
+    // حفظ محلي لإنجازات اليوم والمنبهات
+    const STORAGE_KEY = 'azkar_quran_sunan_state_v6';
+
+    function todayKey() {
+      const d = new Date();
+      return d.toISOString().slice(0, 10);
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return { date: todayKey(), azkar: {}, quran: {}, reminders: [] };
+        const parsed = JSON.parse(raw);
+        if (parsed.date !== todayKey()) {
+          return { date: todayKey(), azkar: {}, quran: {}, reminders: parsed.reminders || [] };
+        }
+        return parsed;
+      } catch (e) {
+        return { date: todayKey(), azkar: {}, quran: {}, reminders: [] };
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    let state = loadState();
+
+    // تبويب الأقسام الرئيسية
+    const sectionTabs = document.querySelectorAll('.section-tab');
+    const sectionPanels = {
+      azkar: document.getElementById('section-azkar'),
+      quran: document.getElementById('section-quran'),
+      sunan: document.getElementById('section-sunan'),
+      hadith: document.getElementById('section-hadith'),
+      duas: document.getElementById('section-duas'),
+      reminders: document.getElementById('section-reminders')
+    };
+
+    function showSection(section) {
+      Object.entries(sectionPanels).forEach(([key, el]) => {
+        if (key === section) {
+          el.classList.remove('hidden');
+        } else {
+          el.classList.add('hidden');
+        }
+      });
+    }
+
+    sectionTabs.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const section = btn.getAttribute('data-section');
+        showSection(section);
+      });
+    });
+
+    // الأذكار
+    const azkarTabs = document.querySelectorAll('.azkar-tab');
+    const azkarListEl = document.getElementById('azkar-list');
+    let currentAzkarType = 'morning';
+
+    azkarTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        currentAzkarType = tab.getAttribute('data-type');
+        azkarTabs.forEach(t => {
+          t.classList.remove('bg-white', 'text-primary');
+          t.classList.add('text-muted');
+        });
+        tab.classList.add('bg-white', 'text-primary');
+        tab.classList.remove('text-muted');
+        renderAzkar();
+      });
+    });
+
+    function getAzkarProgressKey(type, id) {
+      return `${type}_${id}`;
+    }
+
+    function renderAzkar() {
+      const items = AZKAR_DATA[currentAzkarType] || [];
+      azkarListEl.innerHTML = '';
+      if (!items.length) {
+        azkarListEl.innerHTML = '<p class="text-xs text-muted">لا توجد أذكار محددة لهذا القسم.</p>';
+        return;
+      }
+      items.forEach(item => {
+        const key = getAzkarProgressKey(currentAzkarType, item.id);
+        const doneCount = state.azkar[key] || 0;
+        const remaining = item.repeat > 1 ? Math.max(item.repeat - doneCount, 0) : null;
+        const completed = remaining === 0 && item.repeat > 1;
+        const wrapper = document.createElement('article');
+        wrapper.className = 'border border-border rounded-lg p-3 bg-white flex flex-col gap-2';
+        wrapper.innerHTML = `
+          <div class="flex items-start justify-between gap-3">
+            <p class="text-[13px] leading-relaxed text-slate-900">${item.text}</p>
+            ${completed ? '<span class="mt-1 inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-[11px] text-success">✓ تم</span>' : ''}
+          </div>
+          <div class="flex items-center justify-between gap-3 text-xs">
+            <span class="text-muted">المرجع: ${item.source}</span>
+            <div class="flex items-center gap-2">
+              ${item.repeat > 1 ? `<span class="text-muted">المتبقّي: <span class="font-semibold text-slate-900">${remaining}</span> / ${item.repeat}</span>` : '<span class="text-muted">عدد مرّة واحدة</span>'}
+              <button class="repeat-btn inline-flex items-center justify-center rounded-lg border border-border px-2 py-1 text-[12px] text-slate-700 hover:bg-bg focus-visible-outline" ${completed ? 'disabled' : ''}>تكرار</button>
+            </div>
+          </div>
+        `;
+        const btn = wrapper.querySelector('.repeat-btn');
+        if (btn) {
+          btn.addEventListener('click', () => {
+            if (item.repeat > 1) {
+              if (completed) return;
+              state.azkar[key] = (state.azkar[key] || 0) + 1;
+            } else {
+              state.azkar[key] = 1;
+            }
+            saveState();
+            renderAzkar();
+          });
+        }
+        azkarListEl.appendChild(wrapper);
+      });
+    }
+
+    // ورد القرآن
+    const quranListEl = document.getElementById('quran-list');
+
+    function renderQuranWard() {
+      quranListEl.innerHTML = '';
+      QURAN_DATA.forEach(item => {
+        const done = !!state.quran[item.id];
+        const el = document.createElement('article');
+        el.className = 'border border-border rounded-lg p-3 bg-white flex flex-col gap-2';
+        el.innerHTML = `
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <h3 class="text-sm font-semibold text-slate-900">${item.name}</h3>
+              <p class="text-[12px] text-muted">${item.note}</p>
+            </div>
+            ${done ? '<span class="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-[11px] text-success">✓ قرأت اليوم</span>' : ''}
+          </div>
+          <div class="flex justify-end">
+            <button class="quran-toggle inline-flex items-center justify-center rounded-lg ${done ? 'bg-success text-white' : 'border border-border text-slate-700'} px-3 py-1.5 text-[12px] hover:bg-primary-soft hover:text-primary focus-visible-outline">
+              ${done ? 'إلغاء علامة اليوم' : 'وضع علامة قرأت اليوم'}
+            </button>
+          </div>
+        `;
+        const btn = el.querySelector('.quran-toggle');
+        btn.addEventListener('click', () => {
+          if (state.quran[item.id]) {
+            delete state.quran[item.id];
+          } else {
+            state.quran[item.id] = true;
+          }
+          saveState();
+          renderQuranWard();
+        });
+        quranListEl.appendChild(el);
+      });
+    }
+
+    // تبويب ورد / مصحف
+    const quranTabs = document.querySelectorAll('.quran-tab');
+    const quranWardView = document.getElementById('quran-ward-view');
+    const quranMushafView = document.getElementById('quran-mushaf-view');
+
+    function showQuranView(view) {
+      if (view === 'ward') {
+        quranWardView.classList.remove('hidden');
+        quranMushafView.classList.add('hidden');
+      } else {
+        quranWardView.classList.add('hidden');
+        quranMushafView.classList.remove('hidden');
+      }
+      quranTabs.forEach(tab => {
+        const tView = tab.getAttribute('data-view');
+        if (tView === view) {
+          tab.classList.add('bg-white', 'text-primary');
+          tab.classList.remove('text-muted');
+        } else {
+          tab.classList.remove('bg-white', 'text-primary');
+          tab.classList.add('text-muted');
+        }
+      });
+    }
+
+    quranTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const view = tab.getAttribute('data-view');
+        showQuranView(view);
+      });
+    });
+
+    // المصحف الكامل: تحميل من ملف JSON
+    const suraListEl = document.getElementById('sura-list');
+    const suraReaderEl = document.getElementById('sura-reader');
+    const suraTitleEl = document.getElementById('sura-title');
+    const suraTextEl = document.getElementById('sura-text');
+    const btnFontSm = document.getElementById('btn-font-sm');
+    const btnFontLg = document.getElementById('btn-font-lg');
+    let currentFontSize = 14;
+    let mushafData = null;
+
+    function applyFontSize() {
+      suraTextEl.style.fontSize = currentFontSize + 'px';
+    }
+
+    btnFontSm.addEventListener('click', () => {
+      currentFontSize = Math.max(12, currentFontSize - 2);
+      applyFontSize();
+    });
+
+    btnFontLg.addEventListener('click', () => {
+      currentFontSize = Math.min(26, currentFontSize + 2);
+      applyFontSize();
+    });
+
+    async function loadMushaf() {
+      if (mushafData) return;
+      try {
+        const res = await fetch('assets/quran.json');
+        if (!res.ok) return;
+        mushafData = await res.json();
+        renderSuraList();
+      } catch (e) {
+        console.error('خطأ في تحميل المصحف', e);
+      }
+    }
+
+    function renderSuraList() {
+      if (!mushafData || !Array.isArray(mushafData.suras)) return;
+      suraListEl.innerHTML = '';
+      mushafData.suras.forEach(sura => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'text-right w-full px-3 py-2 rounded-lg border border-border text-[13px] text-slate-800 hover:bg-primary-soft hover:text-primary focus-visible-outline';
+        btn.textContent = `${sura.number}. ${sura.name}`;
+        btn.addEventListener('click', () => showSura(sura.number));
+        suraListEl.appendChild(btn);
+      });
+    }
+
+    function showSura(number) {
+      if (!mushafData) return;
+      const sura = mushafData.suras.find(s => s.number === number);
+      if (!sura) return;
+      suraTitleEl.textContent = `سورة ${sura.name}`;
+      suraTextEl.textContent = (sura.ayahs || []).map((a, idx) => `${a} (${idx + 1})`).join('\n\n');
+      suraReaderEl.classList.remove('hidden');
+      applyFontSize();
+    }
+
+    const btnQuranMushaf = document.getElementById('btn-quran-mushaf');
+    if (btnQuranMushaf) {
+      btnQuranMushaf.addEventListener('click', () => {
+        loadMushaf();
+      });
+    }
+
+    // السنن (قراءة فقط)
+    const sunanListEl = document.getElementById('sunan-list');
+
+    function renderSunan() {
+      sunanListEl.innerHTML = '';
+      SUNAN_DATA.forEach(item => {
+        const el = document.createElement('article');
+        el.className = 'border border-border rounded-lg p-3 bg-white flex flex-col gap-2';
+        el.innerHTML = `
+          <h3 class="text-sm font-semibold text-slate-900">${item.name}</h3>
+          <p class="text-[13px] leading-relaxed text-slate-900">${item.desc}</p>
+          <p class="text-[11px] text-muted">${item.ref}</p>
+        `;
+        sunanListEl.appendChild(el);
+      });
+    }
+
+    // الأحاديث
+    const hadithTabs = document.querySelectorAll('.hadith-tab');
+    const hadithListEl = document.getElementById('hadith-list');
+    let currentHadithCategory = 'iman';
+
+    hadithTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        currentHadithCategory = tab.getAttribute('data-category');
+        hadithTabs.forEach(t => {
+          t.classList.remove('bg-white', 'text-primary');
+          t.classList.add('text-muted');
+        });
+        tab.classList.add('bg-white', 'text-primary');
+        tab.classList.remove('text-muted');
+        renderHadith();
+      });
+    });
+
+    function renderHadith() {
+      const items = HADITH_DATA[currentHadithCategory] || [];
+      hadithListEl.innerHTML = '';
+      if (!items.length) {
+        hadithListEl.innerHTML = '<p class="text-xs text-muted">لا توجد أحاديث في هذا القسم حاليًا.</p>';
+        return;
+      }
+      items.forEach((item, index) => {
+        const el = document.createElement('article');
+        el.className = 'border border-border rounded-lg p-3 bg-white flex flex-col gap-2';
+        el.innerHTML = `
+          <div class="flex items-start justify-between gap-2">
+            <h3 class="text-sm font-semibold text-slate-900">حديث رقم ${index + 1}</h3>
+          </div>
+          <p class="text-[13px] leading-relaxed text-slate-900">${item.text}</p>
+          <p class="text-[11px] text-muted">المصدر: ${item.source}</p>
+          ${item.note ? `<p class="text-[11px] text-muted">إشارة: ${item.note}</p>` : ''}
+        `;
+        hadithListEl.appendChild(el);
+      });
+    }
+
+    // الأدعية
+    const duasTabs = document.querySelectorAll('.duas-tab');
+    const duasListEl = document.getElementById('duas-list');
+    let currentDuasCategory = 'ham';
+
+    duasTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        currentDuasCategory = tab.getAttribute('data-category');
+        duasTabs.forEach(t => {
+          t.classList.remove('bg-white', 'text-primary');
+          t.classList.add('text-muted');
+        });
+        tab.classList.add('bg-white', 'text-primary');
+        tab.classList.remove('text-muted');
+        renderDuas();
+      });
+    });
+
+    function renderDuas() {
+      const items = DUAS_DATA[currentDuasCategory] || [];
+      duasListEl.innerHTML = '';
+      if (!items.length) {
+        duasListEl.innerHTML = '<p class="text-xs text-muted">لا توجد أدعية في هذا القسم حاليًا.</p>';
+        return;
+      }
+      items.forEach((item, index) => {
+        const el = document.createElement('article');
+        el.className = 'border border-border rounded-lg p-3 bg-white flex flex-col gap-2';
+        el.innerHTML = `
+          <div class="flex items-start justify-between gap-2">
+            <h3 class="text-sm font-semibold text-slate-900">دعاء رقم ${index + 1}</h3>
+          </div>
+          <p class="text-[13px] leading-relaxed text-slate-900">${item.text}</p>
+          <p class="text-[11px] text-muted">المصدر: ${item.source}</p>
+          ${item.note ? `<p class="text-[11px] text-muted">إشارة: ${item.note}</p>` : ''}
+        `;
+        duasListEl.appendChild(el);
+      });
+    }
+
+    // منبّه بسيط (محلي)
+    const reminderForm = document.getElementById('reminder-form');
+    const remindersListEl = document.getElementById('reminders-list');
+    const reminderModal = document.getElementById('reminder-modal');
+    const reminderModalMessage = document.getElementById('reminder-modal-message');
+    const reminderModalClose = document.getElementById('reminder-modal-close');
+    const reminderAudio = document.getElementById('reminder-audio');
+
+    function reminderLabel(type) {
+      switch (type) {
+        case 'morningAzkar': return 'أذكار الصباح';
+        case 'eveningAzkar': return 'أذكار المساء';
+        case 'quran': return 'ورد القرآن';
+        case 'sunnah': return 'سنة معيّنة';
+        default: return 'تذكير';
+      }
+    }
+
+    function renderReminders() {
+      remindersListEl.innerHTML = '';
+      if (!state.reminders.length) {
+        remindersListEl.innerHTML = '<li class="text-xs text-muted">لا توجد منبّهات محفوظة بعد.</li>';
+        return;
+      }
+      state.reminders.forEach((r, idx) => {
+        const li = document.createElement('li');
+        li.className = 'flex items-center justify-between gap-3 border border-border rounded-lg px-3 py-2 bg-white';
+        li.innerHTML = `
+          <div class="text-xs">
+            <div class="font-medium text-slate-900">${reminderLabel(r.type)}</div>
+            <div class="text-muted">الوقت: ${r.time}</div>
+          </div>
+          <button class="remove-reminder text-[11px] text-danger hover:underline">حذف</button>
+        `;
+        li.querySelector('.remove-reminder').addEventListener('click', () => {
+          state.reminders.splice(idx, 1);
+          saveState();
+          renderReminders();
+        });
+        remindersListEl.appendChild(li);
+      });
+    }
+
+    reminderForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const type = document.getElementById('reminder-type').value;
+      const time = document.getElementById('reminder-time').value;
+      if (!time) return;
+      state.reminders.push({ type, time });
+      saveState();
+      renderReminders();
+    });
+
+    function showReminderModal(message) {
+      reminderModalMessage.textContent = message;
+      reminderModal.classList.remove('hidden');
+      reminderModalClose.focus();
+      try {
+        reminderAudio.currentTime = 0;
+        reminderAudio.play().catch(() => {});
+      } catch (e) {}
+    }
+
+    reminderModalClose.addEventListener('click', () => {
+      reminderModal.classList.add('hidden');
+    });
+
+    // فحص المنبّهات كل دقيقة
+    setInterval(() => {
+      if (!state.reminders.length) return;
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2, '0');
+      const mm = String(now.getMinutes()).padStart(2, '0');
+      const current = `${hh}:${mm}`;
+      state.reminders.forEach(r => {
+        if (r.time === current && r._firedDate !== todayKey()) {
+          showReminderModal(`حان وقت: ${reminderLabel(r.type)}.`);
+          r._firedDate = todayKey();
+          saveState();
+        }
+      });
+    }, 30000);
+
+    // زر تصفير إنجازات اليوم
+    const btnTodayReset = document.getElementById('btnTodayReset');
+    btnTodayReset.addEventListener('click', () => {
+      state.azkar = {};
+      state.quran = {};
+      state.date = todayKey();
+      saveState();
+      renderAzkar();
+      renderQuranWard();
+    });
+
+    // تهيئة عند التحميل
+    renderAzkar();
+    renderQuranWard();
+    renderSunan();
+    renderHadith();
+    renderDuas();
+    renderReminders();
+    showSection('azkar');
+    showQuranView('ward');
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/flowbite@4.0.0/dist/flowbite.min.js"></script>
+</body>
+</html>
